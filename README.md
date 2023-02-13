@@ -1,3 +1,3 @@
 # DatePicker
 
-Javascript web module for date picker.
+Javascript web module for a date picker.
