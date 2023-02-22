@@ -377,8 +377,6 @@ class iwDatePicker extends HTMLElement {
         el.classList.add('current');
       }
 
-      debugger;
-
       if(this.isSelectedDate(day)) {
         el.classList.add('selected');
         this.selectedDayElement = el;
