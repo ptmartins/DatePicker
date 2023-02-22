@@ -1,21 +1,25 @@
 class iwDay {
   constructor(date = null, lang = 'default') {
-    date = date ?? new Date();
-    
-    this.Date = date;
-    this.date = date.getDate();
-    this.day = date.toLocaleString(lang, { weekday: 'long'});
-    this.dayNumber = date.getDay() + 1;
-    this.dayShort = date.toLocaleString(lang, { weekday: 'short'});
-    this.year = date.getFullYear();
-    this.yearShort = date.toLocaleString(lang, { year: '2-digit'});
-    this.month = date.toLocaleString(lang, { month: 'long'});
-    this.monthShort = date.toLocaleString(lang, { month: 'short'});
-    this.monthNumber = date.getMonth() + 1;
-    this.timestamp = date.getTime();
-    this.week = this.getWeekNumber(date);
+    this.lang = lang;
+    this.dt = date ?? new Date();
+    this.date = this.dt.getDate();
+    this.day = this.dt.toLocaleString(lang, { weekday: 'long'});
+    this.dayNumber = this.dt.getDay() + 1;
+    this.dayShort = this.dt.toLocaleString(lang, { weekday: 'short'});
+    this.year = this.dt.getFullYear();
+    this.yearShort = this.dt.toLocaleString(lang, { year: '2-digit'});
+    this.month = this.dt.toLocaleString(lang, { month: 'long'});
+    this.monthShort = this.dt.toLocaleString(lang, { month: 'short'});
+    this.monthNumber = this.dt.getMonth() + 1;
+    this.timestamp = this.dt.getTime();
+    this.weekNumber = this.getWeekNumber(this.dt);
   }
 
+  /**
+   * Get week number
+   * @param {*} date 
+   * @returns 
+   */
   getWeekNumber(date) {
     const firstDayOfTheYear = new Date(date.getFullYear(), 0, 1);
     const pastDaysOfYear = (date.getTime() - firstDayOfTheYear.getTime()) / 86400000;
@@ -28,6 +32,7 @@ class iwDay {
     return this.isEqualTo(new Date());
   }
   
+  
   isEqualTo(date) {
     date = date instanceof iwDay ? date.Date : date;
     
@@ -36,55 +41,67 @@ class iwDay {
       date.getFullYear() === this.year;
   }
   
+  /**
+   * Format date
+   * @param {*} formatStr 
+   * @returns 
+   */
   format(formatStr) {
     return formatStr
       .replace(/\bYYYY\b/, this.year)
       .replace(/\bYYY\b/, this.yearShort)
-      .replace(/\bWW\b/, this.week.toString().padStart(2, '0'))
-      .replace(/\bW\b/, this.week)
+      .replace(/\bWW\b/, this.weekNumber.toString().padStart(2, '0'))
       .replace(/\bDDDD\b/, this.day)
       .replace(/\bDDD\b/, this.dayShort)
       .replace(/\bDD\b/, this.date.toString().padStart(2, '0'))
-      .replace(/\bD\b/, this.date)
       .replace(/\bMMMM\b/, this.month)
       .replace(/\bMMM\b/, this.monthShort)
       .replace(/\bMM\b/, this.monthNumber.toString().padStart(2, '0'))
-      .replace(/\bM\b/, this.monthNumber)
   }
 }
 
+const day = new iwDay();
+console.log(day.weekNumber);
+
 class iwMonth {
   constructor(date = null, lang = 'default') {
-    const day = new iwDay(date, lang);
-    // const monthsSize = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-    this.lang = lang;
-    
-    this.name = day.month;
-    this.number = day.monthNumber;
-    this.year = day.year;
+    const dt = new iwDay(date, lang);
+
+    this.lang = lang;   
+    this.name = dt.month;
+    this.number = dt.monthNumber;
+    this.year = dt.year;
     this.numberOfDays = new Date(this.year, this.number, 0).getDate();
     
-    if(this.number === 2) {
-      this.numberOfDays += this.isLeapYear(day.year) ? 1 : 0;
-    }
-    
     this[Symbol.iterator] = function* () {
-      let number = 1;
-      yield this.getDay(number);
-      while(number < this.numberOfDays) {
-        ++number;
-        yield this.getDay(number);
+      for(let i = 0; i < this.numberOfDays; ++i) {
+        yield this.getDay(i + 1);
       }
     }
   }
 
+  /**
+   * Check if year is leap year
+   * @param {*} year 
+   * @returns 
+   */
   isLeapYear(year) {
     return year % 100 === 0 ? year % 400 === 0 : year % 4 === 0;
   }
   
+  /**
+   * Get day of the month
+   * @param {*} date 
+   * @returns 
+   */
   getDay(date) {
     return new iwDay(new Date(this.year, this.number - 1, date), this.lang);
   }
+}
+
+const month = new iwMonth();
+for(i of month) {
+  console.log(i);
 }
 
 class iwCalendar {
@@ -175,7 +192,6 @@ class iwDatePicker extends HTMLElement {
   visible = false;
   date = null;
   mounted = false;
-  // elements
   toggleButton = null;
   calendarDropDown = null;
   calendarDateElement = null;
@@ -398,52 +414,52 @@ class iwDatePicker extends HTMLElement {
   get style() {
     return `
       :host {
-        position: relative;
         font-family: sans-serif;
+        position: relative;
       }
       
       .datePicker__toggle {
-        padding: .75rem 1.5rem;
-        border: none;
         -webkit-appearance: none;
         -moz-appearance: none;
         appearance: none;
-        background: #eee;
-        color: #333;
-        border-radius: 6px;
+        background: #eee;     
+        border: none;
+        border-radius: 6px;        
+        color: #333;      
+        cursor: pointer;        
         font-weight: bold;
         font-size: 1.1rem;
-        cursor: pointer;
+        padding: .75rem 1.5rem;
         text-transform: capitalize;
       }
       
       .datePicker {
-        display: none;
-        width: 300px;
-        position: absolute;
-        left: 50%;
-        transform: translate(-50%, 8px);
-        padding: 20px;
-        background: #fff;
+        background: #fff;    
         border-radius: 5px;
-        box-shadow: 0 0 8px rgba(0,0,0,0.2);
+        box-shadow: 0 0 8px rgba(0,0,0,0.2);     
+        display: none;
+        left: 50%;
+        padding: 20px;
+        position: absolute;
+        transform: translate(-50%, 8px);
+        width: 300px;
       }
       
       .datePicker.top {
-        top: auto;
         bottom: 100%;
+        top: auto;
         transform: translate(-50%, -8px);
       }
       
       .datePicker.left {
-        top: 50%;
         left: 0;
+        top: 50%;
         transform: translate(calc(-8px + -100%), -50%);
       }
       
       .datePicker.right {
-        top: 50%;
         left: 100%;
+        top: 50%;
         transform: translate(8px, -50%);
       }
       
@@ -452,41 +468,41 @@ class iwDatePicker extends HTMLElement {
       }
       
       .datePicker__header {
+        align-items: center;
         display: flex;
         justify-content: space-between;
-        align-items: center;
         margin: .75rem 0;
       }
       
       .datePicker__title {
-        margin: 0;
-        text-transform: capitalize;
         font-size: 21px;
         font-weight: bold;
+        margin: 0;
+        text-transform: capitalize;
       }
       
       .datePicker__header button {
-        padding: 0;
-        border: 8px solid transparent;
-        width: 0;
-        height: 0;
-        border-radius: 2px;
-        border-top-color: #222;
-        transform: rotate(90deg);
-        cursor: pointer;
         background: none;
+        border: 8px solid transparent;
+        border-top-color: #222;
+        border-radius: 2px;
+        cursor: pointer;
+        height: 0;
+        padding: 0;
         position: relative;
+        transform: rotate(90deg);
+        width: 0;
       }
       
       .datePicker__header button::after {
         content: '';
         display: block;
-        width: 25px;
         height: 25px;
-        position: absolute;
         left: 50%;
+        position: absolute;
         top: 50%;
         transform: translate(-50%, -50%);
+        width: 25px;
       }
       
       .datePicker__header button:last-of-type {
@@ -504,7 +520,7 @@ class iwDatePicker extends HTMLElement {
         border: none;
         border-radius: 4px;
         color: #fff;
-        padding: .375rem .75rem;
+        padding: .5rem .75rem;
       }
       
       .weekDays {
@@ -515,11 +531,11 @@ class iwDatePicker extends HTMLElement {
       }
       
       .weekDays span {
-        display: flex;
-        justify-content: center;
         align-items: center;
+        display: flex;
         font-size: 12px;
         font-weight: bold;
+        justify-content: center;
         text-transform: capitalize;
       }
       
@@ -532,18 +548,18 @@ class iwDatePicker extends HTMLElement {
       }
       
       .day {
-        background-color: transparent;
-        color: #3a3e3f;
-        display: flex;
-        justify-content: center;
         align-items: center;
-        border-radius: 2px;
-        cursor: pointer;
+        background-color: transparent;
         border: none;
-        opacity: 0.3;
+        border-radius: 2px;
+        color: #3a3e3f;
+        cursor: pointer;
+        display: flex;
         height: 32px;
-        width: 32px;
+        justify-content: center;
         justify-self: center;
+        opacity: 0.3;
+        width: 32px;
       }
 
       .day.current {
