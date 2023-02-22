@@ -364,7 +364,6 @@ class iwDatePicker extends HTMLElement {
   }
   
   updateMonthDays() {
-    debugger;
     this.calendarDaysContainer.innerHTML = '';
     
     this.getMonthDaysGrid().forEach(day => {
@@ -377,6 +376,8 @@ class iwDatePicker extends HTMLElement {
       if(day.monthNumber === this.calendar.month.number) {
         el.classList.add('current');
       }
+
+      debugger;
 
       if(this.isSelectedDate(day)) {
         el.classList.add('selected');

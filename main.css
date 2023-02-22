@@ -33,7 +33,6 @@ body {
 }
 
 body {
-    background-color: #dbdbea;
     display: grid;
     grid-template-columns: 1fr;
     align-items: start;
