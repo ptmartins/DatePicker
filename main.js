@@ -34,7 +34,7 @@ class iwDay {
   
   
   isEqualTo(date) {
-    date = date instanceof iwDay ? date.Date : date;
+    date = date instanceof iwDay ? date.dt : date;
     
     return date.getDate() === this.date &&
       date.getMonth() === this.monthNumber - 1 &&
@@ -59,9 +59,6 @@ class iwDay {
       .replace(/\bMM\b/, this.monthNumber.toString().padStart(2, '0'))
   }
 }
-
-const day = new iwDay();
-console.log(day.weekNumber);
 
 class iwMonth {
   constructor(date = null, lang = 'default') {
@@ -99,11 +96,6 @@ class iwMonth {
   }
 }
 
-const month = new iwMonth();
-for(i of month) {
-  console.log(i);
-}
-
 class iwCalendar {
   weekDays = Array.from({length: 7});
   
@@ -114,11 +106,8 @@ class iwCalendar {
     this.lang = lang;
     
     this[Symbol.iterator] = function* () {
-      let number = 1;
-      yield this.getMonth(number);
-      while(number < 12) {
-        ++number;
-        yield this.getMonth(number);
+      for(let i = 0; i < 12; ++i) {
+        yield this.getMonth(i + 1);
       }
     }
     
@@ -231,7 +220,7 @@ class iwDatePicker extends HTMLElement {
     
     this.toggleButton.addEventListener('click', () => this.toggleCalendar());
     this.todayBtn = this.shadow.querySelector('.datePicker__today');
-    this.todayBtn.addEventListener('click', () => console.log('today'));
+    this.todayBtn.addEventListener('click', () => this.updateMonthDays());
     prevBtn.addEventListener('click', () => this.prevMonth());
     nextButton.addEventListener('click', () => this.nextMonth());
     document.addEventListener('click', (e) => this.handleClickOut(e));
@@ -375,6 +364,7 @@ class iwDatePicker extends HTMLElement {
   }
   
   updateMonthDays() {
+    debugger;
     this.calendarDaysContainer.innerHTML = '';
     
     this.getMonthDaysGrid().forEach(day => {
